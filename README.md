@@ -15,3 +15,7 @@ Based off of FRC Team 900's [repository](https://github.com/FRC900/navXTimeSync)
 3) Navigate to the bottom left corner and click 'add' and scroll down and add `Imu` under the 'rviz_imu_plugin' folder
 4) On the left Display panel, add the IMU topic (default should be `/Imu`) and change the 'Fixed Frame' variable to `imu`
 5) Change the settings for the box, axes, and acceleration as needed
+
+
+## Setting up udev rules
+With all of the other sensors attached to the computer, the order in which the sensors are mounted can change, therefore changing their names. Therefore, the script `create_udev_rules.sh` should be used to assign a unique name to the IMU. After running the script, the IMU should show up as /dev/navx.
