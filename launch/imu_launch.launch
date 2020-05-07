@@ -1,0 +1,14 @@
+<launch>
+
+    <!-- IMU data publisher - launches a node that reads from the NavX-Micro IMU and publishes the data -->
+    <node name="navx_node" pkg="navx_ros" type="navx_node">
+        <rosparam>
+            imu_path: "/dev/navx"
+        </rosparam>
+    </node>
+
+
+    <!-- UWB tag publisher - launches the tag_publisher node from the dwm1001-tag package to publish the data from the UWB modules -->
+    <node pkg="tf" type="static_transform_publisher" name="imu_tf_publisher" args="0.06 0 0 0 0 0 base_link imu 100" />
+
+</launch>

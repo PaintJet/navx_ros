@@ -1,4 +1,5 @@
 #include "ros/ros.h"
+#include <ros/console.h>
 #include "std_msgs/Float32.h"
 #include "sensor_msgs/Imu.h"
 #include <AHRS.h>
@@ -15,15 +16,20 @@ float derive(float prevVal, float currVal, float prevTime, float currTime)
 }
 
 int main(int argc, char** argv){
-	
+
 	ros::init(argc, argv, "navx_node");
-	ros::NodeHandle nh;
+	ros::NodeHandle nh("~");
 	ros::Publisher pub = nh.advertise<sensor_msgs::Imu>("Imu", 10);
 	ros::Rate period(10);
 
-	AHRS navx = AHRS("/dev/ttyACM0");
-	sensor_msgs::Imu imu;		
-	
+	// Read in parameter containing the path for the IMU from rosparam server
+	std::string imuPath = "";
+	nh.getParam("imu_path", imuPath);
+	ROS_INFO("Opening serial device %s", imuPath.c_str());
+
+	AHRS navx = AHRS(imuPath);
+	sensor_msgs::Imu imu;
+
 	//initialize valus to calculate angular velocity for the IMU message
 	float prevTime = navx.GetLastSensorTimestamp() / 1000.0;
 	float prevPitch = navx.GetPitch() * degToRad; //about x-axis (empirically y-axis)
@@ -46,17 +52,17 @@ int main(int argc, char** argv){
 		imu.linear_acceleration.x = navx.GetWorldLinearAccelX();
 		imu.linear_acceleration.y = navx.GetWorldLinearAccelY();
 		imu.linear_acceleration.z = navx.GetWorldLinearAccelZ();
-	
+
 		//angular velocity
 		float currTime = navx.GetLastSensorTimestamp() / 1000.0;
 		float currPitch = navx.GetPitch() * degToRad;
 		float currRoll = navx.GetRoll() * degToRad;
 		float currYaw = navx.GetYaw() * degToRad;
-		
+
 		//these are flipped based on the diagram on the sensor
 		imu.angular_velocity.y = derive(prevPitch, currPitch, prevTime, currTime);
 		imu.angular_velocity.x = derive(prevRoll, currRoll, prevTime, currTime);
-		imu.angular_velocity.z = derive(prevYaw, currYaw, prevTime, currTime);	
+		imu.angular_velocity.z = derive(prevYaw, currYaw, prevTime, currTime);
 
 		prevTime = currTime;
 		prevPitch = currPitch;
